@@ -1,0 +1,12 @@
+version: "3.6"
+
+services:
+
+  kassenzettel:
+    container_name: kassenzettel
+    build:
+      context: .
+    ports:
+      # NOTE: FRONTEND_PORT -> .env
+      - 81:81
+    #restart: always
