@@ -16,15 +16,20 @@ var app = express();
 app.use(cors());
 
 
-// body-perser: Multer
 /**
- * File upload storage configuration.
+ * File upload Multer body-parser storage configuration.
  */
 var storage_engine = multer.diskStorage({
   destination: function (req, file, cb) {
+    /**
+     * File upload location.
+     */
     cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
+    /**
+     * Rename files to unique id.
+     */
     var fileid = uuidv4();
     const newFileName = Date.now() + '_' + fileid + '.png';
     cb(null, newFileName);
@@ -37,24 +42,28 @@ app.post('/upload_file', upload_multer.single('file'), function (req, res, next)
    * Endpoint to upload images for OCR.
    */
 
-  console.log(req.file.originalname);
+  console.log('Received: ' + req.file.originalname);
 
   var http_success = true;
   // call python OCR
-  var anotatedFileName = null;
+  var fileID = null;
   const pythonProcess = spawnLib.spawn('venv/bin/python3.7',["./ocr_script.py", req.file.path]);
   pythonProcess.stdout.on('data', (data) => {
-    anotatedFileName = data.toString();
+    fileID = data.toString();
+
+    console.log(fileID);
+
+
+    // remove line break from string end
+    fileID = fileID.replace(/(\r\n|\n|\r)/gm,"");
   });
 
   // python process event handler
   pythonProcess.stderr.on('data', (data) => {
-    //console.log(data.toString());
-
-    // check for errors
     if (data.toString().includes('Skipping this page Error during processing')) {
       http_success = false;
-      res.redirect(301, process.env.HOST+':'+process.env.FRONTEND_PORT);
+      //res.redirect(301, process.env.HOST+':'+process.env.FRONTEND_PORT);
+      res.status(501).send(data.toString());
     }
   });
 
@@ -62,25 +71,22 @@ app.post('/upload_file', upload_multer.single('file'), function (req, res, next)
   pythonProcess.on("exit", () => {
     console.log("OCR process finished!");
 
-    if (http_success && anotatedFileName) {
-      var filename = path.join(__dirname, anotatedFileName);
+    if (http_success && fileID) {
+      var imageFilePath = path.join(__dirname, fileID + '_annotated.png');
+      var tableFilePath = path.join(__dirname, fileID + '.csv');
 
-      // remove line break from path string
-      filename = filename.replace(/(\r\n|\n|\r)/gm,"");
+      //console.log("PNG: " + imageFilePath);
+      //console.log("CSV: " + tableFilePath);
 
-      console.log(filename);
-
-      res.status(200).sendFile(filename); 
+      res.status(200).sendFile(imageFilePath);
+      res.status(200).sendFile(tableFilePath);
+      //res.end();
     } else {
+      console.error("OCR failed!");
       res.status(500).send('OCR failed....');
     }
   });
   
-});
-
-app.get('/anotated/:fileid', function (req, res, next) {
-  console.log(req.params.fileid);
-  res.send(req.params.fileid);
 });
 
 /**

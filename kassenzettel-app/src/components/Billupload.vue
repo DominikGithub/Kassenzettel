@@ -7,6 +7,7 @@
     <div id="preview">
       <img v-if="urlRaw" :src="urlRaw" />
       <img v-if="urlAnnontated" :src="urlAnnontated" />
+      {{ message }}
     </div>
   </div>
 </template>
@@ -24,7 +25,8 @@ export default {
     return {
       urlRaw: null,
       urlAnnontated: null,
-      file: ""
+      file: "",
+      message: null
     };
   },
   methods: {
@@ -33,6 +35,7 @@ export default {
       this.urlRaw = URL.createObjectURL(file);
     },
     submit: function() {
+      this.urlAnnontated = null;
       console.log("send file");
 
       // get file reference
@@ -58,6 +61,7 @@ export default {
         )
         .then(response => {
           //this.url = null;
+          this.message = null;
 
           // response image
           const imageData = btoa(
@@ -68,7 +72,11 @@ export default {
 
         })
         .catch(err => {
+          this.url = null;
+
           console.log(err);
+          this.urlAnnontated = null;
+          this.message = err;
         });
     }
   }

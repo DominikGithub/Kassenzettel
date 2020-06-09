@@ -25,8 +25,10 @@ from PIL import Image, ImageDraw
 filename = sys.argv[1]
 
 # filenames
-anotated_filename = filename.split('.')[0] + '_anotated.png'
-binarized_filename = filename.split('.')[0] + '_bin.png'
+file_id = filename.split('.')[0]
+anotated_filename = file_id + '_annotated.png'
+binarized_filename = file_id + '_bin.png'
+csv_filename = file_id + '.csv'
 
 
 # load input image
@@ -48,6 +50,7 @@ img_bin = Image.fromarray(img_bin)
 # image orientation
 orientation = pytesseract.image_to_osd(img, lang="deu")
 rot = 270
+#rot = 269
 img_bin = img_bin.rotate(rot, expand=True)
 img = img.rotate(rot, expand=True)
 
@@ -81,7 +84,7 @@ img_bin.save('./'+binarized_filename)
 
 ## OCR 
 # config
-ocr_config = ' --psm 11 -bordercolor White -border 10x10 -load_system_dawg false -load_freq_dawg false ' # -tessedit_char_whitelist true
+ocr_config = ' --psm 12 -bordercolor White -border 10x10 -load_system_dawg false -load_freq_dawg false ' # -tessedit_char_whitelist true
 
 # get text
 ocr_df = pytesseract.image_to_data(img_bin, lang="deu", config=ocr_config, output_type='data.frame')
@@ -114,19 +117,19 @@ img = img.convert('RGB')
 
 
 #NOTE resize temp
-#newsize = (600, 900) 
-#img = img.resize(newsize)
+newsize = (600, 900) 
+img = img.resize(newsize)
 
 
 # save anotated image
 img.save('./'+anotated_filename)
 
 
-
-# forward results
-#print(df.to_html())    #TODO return OCR results as table data
+# save table results
+ocr_df.to_csv(csv_filename)
 
 # return anoted file name
-print(anotated_filename)
+print(file_id)
+
 sys.stdout.flush()
 exit(0)
