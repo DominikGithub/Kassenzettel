@@ -7,7 +7,7 @@ Web app for Zettel OCR.
 2. Install dependencies: `$ npm install` (for front- and backend dirs)  
 3. Python backend: 
 ```
- Create virtualenv: $ virtualenv venv 3.7 (activate: $ source /venv/bin/activate)  
+ Create virtualenv: $ virtualenv venv -p 3.7 (activate: $ source /venv/bin/activate)  
  Install requirements: $ pip install requirements.txt
 ```
 4. Tesseract intall lang (Ubuntu): 

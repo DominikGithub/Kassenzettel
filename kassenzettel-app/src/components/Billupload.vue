@@ -1,27 +1,27 @@
 <template>
   <div>
     <h1>Bill upload</h1>
-
     <!--input type="file" @change="select" />
     <input type="button" @click="send" value="Send" /-->
-
+    
     <form action="http://116.203.120.38:4000/upload_file" enctype="multipart/form-data" method="post">
       <input type="file" name="image" @change="select">
       <input type="submit" value="send">
     </form>
-
+    
     <div id="preview">
       <img v-if="url" :src="url" />
       <span v-html="analysis">{{ analysis }}</span>
     </div>
-
   </div>
 </template>
 
 <script lang="ts">
 import axios from "axios";
-import dotenv from 'dotenv';
-dotenv.config()
+//import dotenv from "dotenv";
+//dotenv.config({ path: './.env' });
+
+//console.log(process.env.VUE_APP_HOST);
 
 export default {
   name: "Billupload",
@@ -29,7 +29,7 @@ export default {
     return {
       url: null,
       analysis: null
-    }
+    };
   },
   methods: {
     select: function(e: any) {
@@ -39,41 +39,27 @@ export default {
     send: function() {
       console.log("send file");
 
-      let data = new FormData();
-      //data.append('name', 'some bill');
-      data.append('image', this.url); 
+      const data = new FormData();
+      data.append("image", this.url);
 
-      const http_header = {
-        headers : {
-          'crossdomain': 'true',
-          //'Content-Type' : 'image/jpg'
-          'Content-Type' : 'multipart/form-data'
+      const httpHeader = {
+        headers: {
+          crossdomain: "true",
+          "Content-Type": "multipart/form-data" // ; boundary=${data._boundary}
         }
       };
 
-      axios.post(
-        //'http://116.203.120.38:4000/upload_file',
-        process.env.HOST+':'+process.env.REST_API_PORT + '/upload_file',
-        data,
-        http_header
-      ).then(
-        response => {
-          //console.log('image upload response > ', response.data);
-
-          // show results
+      axios
+        .post(
+          //"http://" + process.env.VUE_APP_HOST + ":" + process.env.VUE_APP_REST_API_PORT + "/upload_file",
+          "http://116.203.120.38:4000/upload_file",
+          data,
+          httpHeader
+        )
+        .then(response => {
           this.url = null;
           this.analysis = response.data;
-
-        }
-      )
-
-
-
-
-
-
-
-
+        });
     }
   }
 };
