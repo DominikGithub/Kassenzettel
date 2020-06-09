@@ -1,17 +1,12 @@
 <template>
   <div>
-    <h1>Bill upload</h1>
-    <!--input type="file" @change="select" />
-    <input type="button" @click="send" value="Send" /-->
-    
-    <form action="http://116.203.120.38:4000/upload_file" enctype="multipart/form-data" method="post">
-      <input type="file" name="image" @change="select">
-      <input type="submit" value="send">
-    </form>
+    <h1>Receipt annotation</h1>
+    <input type="file" ref="file" @change="select" />
+    <input type="button" v-on:click="submit" value="Send" />
     
     <div id="preview">
-      <img v-if="url" :src="url" />
-      <span v-html="analysis">{{ analysis }}</span>
+      <img v-if="urlRaw" :src="urlRaw" />
+      <img v-if="urlAnnontated" :src="urlAnnontated" />
     </div>
   </div>
 </template>
@@ -27,25 +22,30 @@ export default {
   name: "Billupload",
   data() {
     return {
-      url: null,
-      analysis: null
+      urlRaw: null,
+      urlAnnontated: null,
+      file: ""
     };
   },
   methods: {
     select: function(e: any) {
       const file = e.target.files[0];
-      this.url = URL.createObjectURL(file);
+      this.urlRaw = URL.createObjectURL(file);
     },
-    send: function() {
+    submit: function() {
       console.log("send file");
 
+      // get file reference
+      this.file = this.$refs.file.files[0];
+
       const data = new FormData();
-      data.append("image", this.url);
+      data.append("file", this.file);
 
       const httpHeader = {
+        responseType: 'arraybuffer',
         headers: {
-          crossdomain: "true",
-          "Content-Type": "multipart/form-data" // ; boundary=${data._boundary}
+          "crossdomain": "true",
+          "Content-Type": "multipart/form-data"
         }
       };
 
@@ -57,8 +57,18 @@ export default {
           httpHeader
         )
         .then(response => {
-          this.url = null;
-          this.analysis = response.data;
+          //this.url = null;
+
+          // response image
+          const imageData = btoa(
+            new Uint8Array(response.data)
+              .reduce((data, byte) => data + String.fromCharCode(byte), '')
+          );
+          this.urlAnnontated = `data:${response.headers['content-type'].toLowerCase()};base64,${imageData}`;
+
+        })
+        .catch(err => {
+          console.log(err);
         });
     }
   }
@@ -78,7 +88,7 @@ h1 {
 }
 
 #preview img {
-  max-width: 100%;
-  max-height: 500px;
+  max-width: 500px;
+  max-height: 100%;
 }
 </style>

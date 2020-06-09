@@ -15,31 +15,29 @@ require('dotenv').config();
 var app = express();
 app.use(cors());
 
-//app.use(express.static(__dirname + '/uploads'));
-
 
 // body-perser: Multer
 /**
  * File upload storage configuration.
  */
-var storage = multer.diskStorage({
+var storage_engine = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
     var fileid = uuidv4();
-    const suffix = Date.now() + '_' + fileid + '.png';
-    cb(null, file.fieldname + suffix);
+    const newFileName = Date.now() + '_' + fileid + '.png';
+    cb(null, newFileName);
   }
 });
-var upload_multer = multer({ storage: storage });
+var upload_multer = multer({ storage: storage_engine });
 
-
-
-app.post('/upload_file', upload_multer.single('image'), function (req, res, next) {
+app.post('/upload_file', upload_multer.single('file'), function (req, res, next) {
   /**
    * Endpoint to upload images for OCR.
    */
+
+  console.log(req.file.originalname);
 
   var http_success = true;
   // call python OCR
@@ -54,7 +52,7 @@ app.post('/upload_file', upload_multer.single('image'), function (req, res, next
     //console.log(data.toString());
 
     // check for errors
-    if (data.toString().includes('Skipping this page Error during processing')){
+    if (data.toString().includes('Skipping this page Error during processing')) {
       http_success = false;
       res.redirect(301, process.env.HOST+':'+process.env.FRONTEND_PORT);
     }
@@ -63,19 +61,16 @@ app.post('/upload_file', upload_multer.single('image'), function (req, res, next
   // send response on success
   pythonProcess.on("exit", () => {
     console.log("OCR process finished!");
-    
-    console.log(anotatedFileName);
 
-    if (http_success && anotatedFileName){
-      
+    if (http_success && anotatedFileName) {
       var filename = path.join(__dirname, anotatedFileName);
 
       // remove line break from path string
       filename = filename.replace(/(\r\n|\n|\r)/gm,"");
 
-      //console.log('2. ' + filename);
-      res.status(200).sendFile(filename);
+      console.log(filename);
 
+      res.status(200).sendFile(filename); 
     } else {
       res.status(500).send('OCR failed....');
     }
@@ -83,6 +78,10 @@ app.post('/upload_file', upload_multer.single('image'), function (req, res, next
   
 });
 
+app.get('/anotated/:fileid', function (req, res, next) {
+  console.log(req.params.fileid);
+  res.send(req.params.fileid);
+});
 
 /**
  * Start REST API backend.

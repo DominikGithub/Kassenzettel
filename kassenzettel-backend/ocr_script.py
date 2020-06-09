@@ -111,6 +111,13 @@ img = img.convert('RGBA')
 img = Image.alpha_composite(img, overlay) 
 img = img.convert('RGB')
 
+
+
+#NOTE resize temp
+#newsize = (600, 900) 
+#img = img.resize(newsize)
+
+
 # save anotated image
 img.save('./'+anotated_filename)
 
