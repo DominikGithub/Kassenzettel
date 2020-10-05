@@ -3,7 +3,6 @@
     <h1>Receipt annotation</h1>
     <input type="file" ref="file" @change="select" />
     <input type="button" v-on:click="submit" value="Send" />
-    
     <div id="preview">
       <img v-if="urlRaw" :src="urlRaw" />
       <img v-if="urlAnnontated" :src="urlAnnontated" />
@@ -14,14 +13,20 @@
 
 <script lang="ts">
 import axios from "axios";
-//import dotenv from "dotenv";
-//dotenv.config({ path: './.env' });
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
 
-//console.log(process.env.VUE_APP_HOST);
+console.log(process.env);
 
 export default {
   name: "Billupload",
-  data() {
+  /*props: {
+    urlRaw: String, 
+    urlAnnontated: String, 
+    file: String, 
+    message: String
+  },*/
+  data(){
     return {
       urlRaw: null,
       urlAnnontated: null,
@@ -31,7 +36,7 @@ export default {
   },
   methods: {
     select: function(e: any) {
-      const file = e.target.files[0];
+      const file = e.target.files[0].tostring();
       this.urlRaw = URL.createObjectURL(file);
     },
     submit: function() {
@@ -41,8 +46,8 @@ export default {
       // get file reference
       this.file = this.$refs.file.files[0];
 
-      const data = new FormData();
-      data.append("file", this.file);
+      const formInputData = new FormData();
+      formInputData.append("file", this.file);
 
       const httpHeader = {
         responseType: 'arraybuffer',
@@ -54,9 +59,9 @@ export default {
 
       axios
         .post(
-          //"http://" + process.env.VUE_APP_HOST + ":" + process.env.VUE_APP_REST_API_PORT + "/upload_file",
-          "http://116.203.120.38:4000/upload_file",
-          data,
+          //"http://" + process.env.VUE_APP_HOST + ":" + process.env.VUE_APP_REST_API_PORT + "/upload_file",   // ?.tostring()
+          "http://localhost:4000/upload_file",
+          formInputData,
           httpHeader
         )
         .then(response => {

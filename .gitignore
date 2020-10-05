@@ -27,6 +27,3 @@ pnpm-debug.log*
 venv/
 node_modules/
 package-lock.json
-
-# keep dirs
-!uploads/

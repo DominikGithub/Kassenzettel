@@ -75,9 +75,6 @@ app.post('/upload_file', upload_multer.single('file'), function (req, res, next)
       var imageFilePath = path.join(__dirname, fileID + '_annotated.png');
       var tableFilePath = path.join(__dirname, fileID + '.csv');
 
-      //console.log("PNG: " + imageFilePath);
-      //console.log("CSV: " + tableFilePath);
-
       res.status(200).sendFile(imageFilePath);
       res.status(200).sendFile(tableFilePath);
       //res.end();

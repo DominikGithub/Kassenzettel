@@ -9,7 +9,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/",
     name: "Home",
-    component: Billupload //Home
+    component: Billupload
   },
   {
     path: "/about",
